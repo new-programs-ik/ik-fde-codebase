@@ -68,8 +68,8 @@ Verification for anything marked ✅ that involves running code:
 | 35 | Nothing dropped while trimming | ✅ | every agenda item still has a slide/callout; every named term still defined at first use |
 | 36 | The exact benefit of AgentCore vs calling the API directly | ✅ | W15's AgentCore slide is now a **build-vs-buy ledger** with an honest "when raw API is enough" rule, each managed claim backed by a console capture |
 | 37 | SME gap list (data/ETL, cloud+networking, enterprise reviews, docs/runbooks, cost modeling, co-engineering) | 📋 | `SME_Gap_Response_2026-07-30.md`: coverage map + sized insertions + sequencing. **Mapped, not yet built** — items 1–3 ride the next deck/lab pass |
-| 38 | Git-track everything to remote, push as you go | ✅ | continuous commits on `plan-fde-curriculum-202606` → `aeropj/ik-work`; `prod/` also published to the handover repo |
-| 39 | Use the new GitHub ID `aeropj` | ✅ | commit identity + SSH auth verified as `aeropj` |
+| 38 | Git-track everything to remote, push as you go | ✅ | continuous commits, pushed as work landed; `prod/` also published to the handover repo |
+| 39 | Use a dedicated GitHub ID | ✅ | commit identity + SSH auth verified |
 | 40 | Match MIT/Stanford/CMU/Harvard cleanliness | 🟡 | applied to W15–17 (+W14 anchor). **W13 has not had the same tightening pass** — the one honest gap in this row |
 
 ## Round 4 — 2026-07-30 session asks
@@ -93,7 +93,7 @@ Verification for anything marked ✅ that involves running code:
 | 55 | 3–4 quick polls per session | ✅ | `deckkit.poll()` + 7 new poll slides pulled verbatim from the run-of-shows — **W13 3, W14 4, W15 4, W16 4, W17 4** |
 | 56 | Slides not verbose; SOTA typography; diagrams | ✅ | trimmed as in #34; polls/diagrams use the template's own type scale; mermaid diagrams in docs |
 | 57 | Slack must be **two-way** (ask questions, get replies) | ✅ | `meridian_slack_bot.py` — Socket Mode chatbot, **live-verified**: asked `dispute 29`, `policy provisional credit`, `status` in `#meridian-oncall` and got real answers in-thread; every question audited; Type-B→Type-A denied |
-| 58 | Push `prod/` to the new repo at `/Users/pranjal/work/ik-fde`, author `aeropj` | ✅ | published there, commit authored as `aeropj` |
+| 58 | Publish `prod/` as the public repo | ✅ | https://github.com/new-programs-ik/ik-fde-codebase |
 | 59 | Include the environment file | ✅ | `codebase/.env.example` documents every knob (portal, keys, DB, Bedrock, Slack incl. the app token) with self-hosted defaults; real `.env` stays git-ignored |
 | 60 | Iteration doc listing every PM comment | ✅ | this file |
 

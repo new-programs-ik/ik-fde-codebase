@@ -53,7 +53,7 @@ injection hole blocks the release regardless of the average. Useful flags: `--ca
 and `promptfoo.yaml` adds LLM-rubric asserts with **ollama** as the default provider; **local
 OTel + Grafana** for dashboards instead of CloudWatch.
 
-**Run it at home:** fork + clone this repo — https://github.com/aeropj/ik-fde —
+**Run it at home:** fork + clone this repo — https://github.com/new-programs-ik/ik-fde-codebase —
 then `make verify` and `make golden` (the full 150-case gate).
 
 ---

@@ -19,7 +19,7 @@ per-user scope enforcement and an append-only audit log, proven by the two-analy
 
 **How this lab works:** in class you *watch* the instructor build the door up on screen and
 answer predict-then-verify drills — there is **no code-along**. You build it yourself at
-home, in this repo: https://github.com/aeropj/ik-fde
+home, in this repo: https://github.com/new-programs-ik/ik-fde-codebase
 — fork + clone → `make verify` → run `codebase/labs/w16-integrate/mcp_demo.py` → extend it into your M3 there.
 
 **In-class activities (instructor-run, all-cohort, no code):**
@@ -196,7 +196,7 @@ Slack → portal login → dispute 29 → **Linked tickets (23)**. Verbatim log:
 - [ ] **The two-analyst test passes in your own deployment** (different answers + matching audit).
 
 **Stretch:** a third backend; webhook-driven ticket updates; deny-by-default with explicit grants.
-Build it in your fork of this repo: https://github.com/aeropj/ik-fde.
+Build it in your fork of this repo: https://github.com/new-programs-ik/ik-fde-codebase.
 
 > Cliffhanger → W17: "During user-acceptance testing on staging, a crafted document planted
 > in the policy store injected instructions into the agent. Two failures, one evening:

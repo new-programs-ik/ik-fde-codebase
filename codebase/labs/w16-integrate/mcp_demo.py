@@ -46,8 +46,8 @@ offline mock.
 In the real lab students replace the in-memory backends with calls to the live
 Meridian platform (platform/agent/src/meridian_agent/db.py / the /api/v1 REST
 API) and wire OAuth2 on-behalf-of token exchange; the SHAPE of the server —
-typed tools, scope check, audit — is identical. Build yours at home in the
-learner repo: https://github.com/InfinitelyAsymptotic/ik-fde-meridian-engagement
+typed tools, scope check, audit — is identical. Build yours at home in your
+fork of this repo: https://github.com/new-programs-ik/ik-fde-codebase
 """
 from __future__ import annotations
 
