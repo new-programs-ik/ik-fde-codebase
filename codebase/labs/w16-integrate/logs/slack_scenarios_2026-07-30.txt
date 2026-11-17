@@ -1,0 +1,91 @@
+# Slack — every scenario, run live 2026-07-30 (workspace ik-test, #meridian-oncall)
+
+$ python3 slack_integration_demo.py --simulate happy
+
+▶ happy
+  → happy path (on-call, Type-A): posted to Slack, audit row written
+
+
+$ python3 slack_integration_demo.py --simulate rbac
+
+▶ rbac
+    403 DENIED — analyst_b@meridian.test (scope=type_b) may not escalate Type-A to Slack
+    audit deny row: {"acting_identity": "analyst_b@meridian.test", "scope": "type_b", "action": "notify_slack", "resource": "slack/#disputes-oncall#dispute/4417", "decision": "deny"}
+  → RBAC (Type-B tries to escalate Type-A): 403 DENIED at the door + deny row audited — Slack never called
+
+
+$ python3 slack_integration_demo.py --simulate rate_limit
+
+▶ rate_limit
+    attempt 1: 429 rate-limited → backoff 1s, retrying
+  → rate_limit (Slack 429): backoff + retry → delivered_via=slack
+
+
+$ python3 slack_integration_demo.py --simulate expired_webhook
+
+▶ expired_webhook
+    attempt 1: hard failure (slack 404: {"error": "invalid_token"}) → not retryable
+    Slack undeliverable → routing to the ticket fallback (escalation is never lost)
+  → expired_webhook (Slack 404 invalid_token): graceful fallback → ticket TCK-4417-fallback (escalation not lost)
+
+
+$ python3 slack_integration_demo.py --simulate timeout
+
+▶ timeout
+    attempt 1: hard failure (slack timeout: no response) → not retryable
+    Slack undeliverable → routing to the ticket fallback (escalation is never lost)
+    attempt 1: hard failure (slack timeout: no response) → not retryable
+    circuit-breaker TRIPPED after 2 consecutive failures — further calls short-circuit to the fallback
+    Slack undeliverable → routing to the ticket fallback (escalation is never lost)
+    circuit-breaker OPEN → skipping Slack, routing to the ticket fallback
+  → timeout (Slack hangs, ×3): breaker opened after 2 fails; 3rd call short-circuited → reason=circuit_open
+
+
+$ python3 slack_integration_demo.py --simulate duplicate
+
+▶ duplicate
+    idempotency: key 'dup-1' already sent → returning prior result, not re-posting
+  → duplicate (same idempotency key twice): second send deduped=True — on-call paged once, not twice
+
+
+$ python3 slack_integration_demo.py --simulate schema_drift
+
+▶ schema_drift
+    defensive-parse: unexpected Slack response body '{"status": "accepted", "ts": "1720000000.1"}'; HTTP was 200 → treating as delivered, flagging for review
+  → schema_drift (200 but response shape changed): defensive parse → still delivered_via=slack, flagged not crashed
+
+
+$ curl -s -X POST https://slack.com/api/chat.postMessage  # bad channel id → real API error path
+{
+    "ok": false,
+    "error": "channel_not_found",
+    "warning": "missing_charset",
+    "response_metadata": {
+        "warnings": [
+            "missing_charset"
+        ]
+    }
+}
+
+## Multiple live inputs through the MCP protocol (real stdio JSON-RPC)
+
+→ {"jsonrpc": "2.0", "id": 1, "method": "initialize", "params": {"protocolVersion": "2025-06-18", "capabilities": {}, "clientInfo": {"name": "walkthroug
+← result keys: ['protocolVersion', 'capabilities', 'serverInfo']
+
+→ {"jsonrpc": "2.0", "method": "notifications/initialized"}
+
+→ {"jsonrpc": "2.0", "id": 2, "method": "tools/list"}
+← result keys: ['tools']
+
+→ {"jsonrpc": "2.0", "id": 3, "method": "tools/call", "params": {"name": "notify_slack", "arguments": {"dispute_id": "29", "dispute_type": "A", "reg_e_s
+← isError=False  {"mode": "bot", "acting_identity": "oncall_a@meridian.test", "result": {"delivered_via": "slack", "channel": "#meridian-oncall", "ok": true}, "audit_row": {"acting_identity": "oncall_a@meridian.test", "scope": "type_a", "action": "notify_slack", "resource": "slack/#meridian-oncall#dispute/29", "decision": "allow"}}
+
+→ {"jsonrpc": "2.0", "id": 4, "method": "tools/call", "params": {"name": "notify_slack", "arguments": {"dispute_id": "1", "dispute_type": "A", "reg_e_st
+← isError=False  {"mode": "bot", "acting_identity": "oncall_a@meridian.test", "result": {"delivered_via": "slack", "channel": "#meridian-oncall", "ok": true}, "audit_row": {"acting_identity": "oncall_a@meridian.test", "scope": "type_a", "action": "notify_slack", "resource": "slack/#meridian-oncall#dispute/1", "decision": "allow"}}
+
+→ {"jsonrpc": "2.0", "id": 5, "method": "tools/call", "params": {"name": "notify_slack", "arguments": {"dispute_id": "29", "dispute_type": "A", "reg_e_s
+← isError=False  {"mode": "bot", "acting_identity": "oncall_a@meridian.test", "result": {"delivered_via": "slack", "channel": "#meridian-oncall", "ok": true, "deduped": true}, "audit_row": {"acting_identity": "oncall_a@meridian.test", "scope": "type_a", "action": "notify_slack", "resource": "slack/#meridian-oncall#dispute/29", "decision": "allow"}}
+
+→ {"jsonrpc": "2.0", "id": 6, "method": "tools/call", "params": {"name": "notify_slack", "arguments": {"dispute_id": "1502", "dispute_type": "B", "reg_e
+← isError=True  {"mode": "bot", "error": "access_denied", "detail": "oncall_a@meridian.test (scope=type_a) may not escalate Type-B to Slack", "audit_row": {"acting_identity": "oncall_a@meridian.test", "scope": "type_a", "action": "notify_slack", "resource": "slack/#meridian-oncall#dispute/1502", "decision": "deny"}}
+

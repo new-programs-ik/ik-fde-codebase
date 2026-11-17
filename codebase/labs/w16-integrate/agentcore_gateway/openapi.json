@@ -1,0 +1,110 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Meridian Bank Agent API (Gateway subset)",
+    "version": "1.0.0",
+    "description": "The four routes the triage pipeline calls, trimmed from the platform's full spec (live at /api/v1/openapi.json, Redoc at /api/docs). Each operationId below becomes an MCP tool name when AgentCore Gateway ingests this file. RBAC scope is enforced by the API layer on every call — never by the LLM; out-of-scope reads return 403 forbidden_scope and are audit-logged."
+  },
+  "servers": [
+    { "url": "https://ik-fde-casestudy-bank.vercel.app/api/v1" }
+  ],
+  "security": [{ "bearerKey": [] }],
+  "paths": {
+    "/disputes/{id}": {
+      "get": {
+        "operationId": "get_dispute",
+        "summary": "Read one dispute, scope-checked (403 forbidden_scope if out of scope).",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "The dispute (BIGINT ids serialize as strings).",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "dispute": { "type": "object" } } } } }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/disputes/{id}/evidence": {
+      "get": {
+        "operationId": "get_dispute_evidence",
+        "summary": "Evidence artifacts on file for a dispute (scope-checked via the parent).",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Evidence rows.",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "evidence": { "type": "array", "items": { "type": "object" } } } } } }
+          },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    },
+    "/policies": {
+      "get": {
+        "operationId": "search_policies",
+        "summary": "Policy-KB search for the RAG path; answers must cite [chunk NN].",
+        "parameters": [
+          { "name": "q", "in": "query", "required": true, "schema": { "type": "string" } },
+          { "name": "limit", "in": "query", "required": false, "schema": { "type": "integer", "maximum": 100 } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Matching policy chunks.",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "chunks": { "type": "array", "items": { "type": "object" } } } } } }
+          }
+        }
+      }
+    },
+    "/disputes/{id}/tickets": {
+      "post": {
+        "operationId": "create_dispute_ticket",
+        "summary": "The human-handoff write. Idempotent: replays with the same Idempotency-Key return the original ticket (200 + Idempotent-Replay: true) instead of a second row.",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } },
+          { "name": "Idempotency-Key", "in": "header", "required": true, "schema": { "type": "string" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["channel", "subject", "body"],
+                "properties": {
+                  "channel": { "type": "string", "enum": ["phone", "email", "branch", "chat"] },
+                  "subject": { "type": "string" },
+                  "body": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Ticket created (carries the caller's learner_id — write-scoping).",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "ticket": { "type": "object" } } } } }
+          },
+          "200": { "description": "Idempotent replay — the original ticket." },
+          "403": { "$ref": "#/components/responses/Forbidden" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerKey": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Scoped analyst key (mrdn_<32 hex>). With Gateway, this never lives in agent code: an AgentCore Identity credential provider injects it per call."
+      }
+    },
+    "responses": {
+      "Forbidden": {
+        "description": "Out-of-scope access: {\"error\":{\"code\":\"forbidden_scope\",…}} — and an audit row with decision='deny'."
+      }
+    }
+  }
+}

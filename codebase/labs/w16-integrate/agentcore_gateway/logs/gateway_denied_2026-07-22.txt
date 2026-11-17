@@ -1,0 +1,13 @@
+AGENTCORE GATEWAY APPLY — verbatim denial capture, 2026-07-22
+Account: 073710022953 user/intksrtuser09 (the IK shared key), us-east-1.
+Proof of the devops blocker: explicit IAM deny on bedrock-agentcore:*.
+Command: MERIDIAN_API_KEY=mrdn_<scoped key> python3 gateway_setup.py apply
+
+
+An error occurred (AccessDeniedException) when calling the CreateApiKeyCredentialProvider operation: User: arn:aws:iam::073710022953:user/intksrtuser09 is not authorized to perform: bedrock-agentcore:CreateApiKeyCredentialProvider on resource: arn:aws:bedrock-agentcore:us-east-1:073710022953:token-vault/default/apikeycredentialprovider/* with an explicit deny in an identity-based policy
+
+⛔ AccessDenied on bedrock-agentcore:CreateApiKeyCredentialProvider
+   This is the devops blocker, captured verbatim in logs/gateway_denied_2026-07-22.txt.
+   Ask: attach BedrockAgentCoreFullAccess (+ iam:PassRole on the gateway role) and remove the explicit deny on bedrock-agentcore:*.
+   Meanwhile: run `plan` (works anywhere) or apply on your own account.
+exit code: 2

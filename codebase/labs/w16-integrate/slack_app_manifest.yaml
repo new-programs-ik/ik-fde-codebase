@@ -1,0 +1,31 @@
+# Slack app manifest — paste at api.slack.com/apps → Create New App → From a manifest.
+# Creates "Meridian Escalations": the bot that carries the agent's escalations into
+# the on-call channel AND answers the on-call analyst's questions two-way.
+# Socket Mode is on, so the two-way bot needs no public URL.
+display_information:
+  name: Meridian Escalations
+  description: Governed-door dispute escalations + a two-way on-call assistant — every answer scoped and audited
+  background_color: "#323C50"
+features:
+  bot_user:
+    display_name: meridian-escalations
+    always_online: true
+oauth_config:
+  scopes:
+    bot:
+      - chat:write          # post escalation cards and replies
+      - chat:write.public   # post to public channels without an invite
+      - app_mentions:read   # hear @mentions in channels  (two-way)
+      - channels:history    # read the channel messages it is invited to
+      - im:history          # hear direct messages          (two-way)
+      - im:write            # reply in DMs                  (two-way)
+settings:
+  event_subscriptions:
+    bot_events:
+      - app_mention
+      - message.im
+  interactivity:
+    is_enabled: false
+  org_deploy_enabled: false
+  socket_mode_enabled: true
+  token_rotation_enabled: false

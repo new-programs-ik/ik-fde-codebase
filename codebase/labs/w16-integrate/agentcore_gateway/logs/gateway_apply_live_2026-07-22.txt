@@ -1,0 +1,40 @@
+AGENTCORE GATEWAY LADDER — verbatim capture, 2026-07-22 (live run, IK shared account, AWS Lab STARTED)
+apply run 1 hit a real race (target before gateway READY) — kept for teaching; apply is now resume-safe and waits for READY.
+
+$ python3 gateway_setup.py apply   # run 1
+✓ credential provider arn:aws:bedrock-agentcore:us-east-1:073710022953:token-vault/default/apikeycredentialprovider/meridian-scoped-key
+✓ role arn:aws:iam::073710022953:role/MeridianAgentCoreGatewayRole
+✓ gateway meridian-gateway-hsoav9rj3a → https://meridian-gateway-hsoav9rj3a.gateway.bedrock-agentcore.us-east-1.amazonaws.com/mcp
+Traceback (most recent call last):
+  File "/Users/pranjal/work/ik-work-plan-fde-curriculum-202606/course/week-16/lab/agentcore_gateway/gateway_setup.py", line 266, in <module>
+    {"plan": plan, "apply": apply, "invoke": invoke, "destroy": destroy}[
+  File "/Users/pranjal/work/ik-work-plan-fde-curriculum-202606/course/week-16/lab/agentcore_gateway/gateway_setup.py", line 191, in apply
+    tgt = ctl.create_gateway_target(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/botocore/client.py", line 606, in _api_call
+    return self._make_api_call(operation_name, kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/botocore/context.py", line 123, in wrapper
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Library/Frameworks/Python.framework/Versions/3.11/lib/python3.11/site-packages/botocore/client.py", line 1094, in _make_api_call
+    raise error_class(parsed_response, operation_name)
+botocore.errorfactory.ValidationException: An error occurred (ValidationException) when calling the CreateGatewayTarget operation: Cannot perform operation CreateGatewayTarget when gateway is in CREATING status
+✓ credential provider arn:aws:bedrock-agentcore:us-east-1:073710022953:token-vault/default/apikeycredentialprovider/meridian-scoped-key
+✓ role exists arn:aws:iam::073710022953:role/MeridianAgentCoreGatewayRole
+✓ gateway meridian-gateway-hsoav9rj3a → https://meridian-gateway-hsoav9rj3a.gateway.bedrock-agentcore.us-east-1.amazonaws.com/mcp
+✓ target A5KKG0TFCL (4 tools from openapi.json)
+
+Done. Next: python3 gateway_setup.py invoke
+
+$ python3 gateway_setup.py invoke
+tools/list → ['meridian-api___create_dispute_ticket', 'meridian-api___get_dispute', 'meridian-api___get_dispute_evidence', 'meridian-api___search_policies']
+get_dispute 29 → {"isError": false, "content": [{"type": "text", "text": "{\"dispute\":{\"dispute_id\":\"29\",\"txn_id\":\"908\",\"customer_id\":\"1986\",\"dispute_type\":\"A\",\"reason_code\":\"11.2\",\"status\":\"intake\",\"opened_at\":\"2026-06-16T02:56:12.000Z\",\"reg_e_due_at\":\"2026-06-30T02:56:12.000Z\",\"sla_breached\":false,\"provisional_credit_issued\":false,\"provisional_credit_cents\":null,\"provision
+
+$ python3 gateway_setup.py destroy   # target delete is async — destroy now waits for drain before delete_gateway
+✓ deleted target
+  (skip gateway: An error occurred (ValidationException) when calling the DeleteGateway operation: Gateway with ID: meridian-gateway-hsoav9rj3a has targets associated with it. Delete all targets before deleting the gateway.)
+✓ deleted credential provider
+✓ deleted role policy
+✓ deleted role
+✓ deleted gateway (after target drain)

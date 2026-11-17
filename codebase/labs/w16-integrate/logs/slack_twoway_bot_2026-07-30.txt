@@ -1,0 +1,35 @@
+# Two-way Slack bot — LIVE conversation, 2026-07-30
+# workspace ik-test · channel #meridian-oncall (C0BLPUH1ZQV) · bot meridianescalations (U0BLLUZENGK)
+# Socket Mode (xapp app token, connections:write) — no public URL, no ngrok
+# portal under test: http://localhost:3100/api/v1 (SELF-HOSTED)
+
+$ python3 meridian_slack_bot.py --selftest
+  8/8 route+governance cases PASS (incl. Type-B -> Type-A = 403), 1 deny audited
+
+$ python3 meridian_slack_bot.py    # live
+connected as meridianescalations (U0BLLUZENGK) in ik-test
+portal: http://localhost:3100/api/v1
+listening… (Ctrl-C to stop)
+
+  ← <@U0BLBQPJ1D5> (seat type_a): '<@U0BLLUZENGK>  dispute 29'
+    audit → {"acting_identity": "slack:U0BLBQPJ1D5", "scope": "type_a", "action": "lookup_dispute", "resource": "dispute/29", "decision": "allow"}
+  → replied in C0BLPUH1ZQV
+
+  ← <@U0BLBQPJ1D5> (seat type_a): '<@U0BLLUZENGK>  policy provisional credit'
+    audit → {"acting_identity": "slack:U0BLBQPJ1D5", "scope": "type_a", "action": "search_policy", "resource": "query=provisional credit", "decision": "allow", "hits": 6}
+  → replied in C0BLPUH1ZQV
+
+  ← <@U0BLBQPJ1D5> (seat type_a): '<@U0BLLUZENGK>  status'
+    audit → {"acting_identity": "slack:U0BLBQPJ1D5", "scope": "type_a", "action": "status", "resource": "-", "decision": "allow"}
+  → replied in C0BLPUH1ZQV
+
+
+## The replies the analyst saw in Slack (from the thread screenshots)
+Q: @meridian-escalations dispute 29
+A: Dispute 29 — Type-A · reason 11.2
+   • amount: $35.36 · merchant: Hillcrest Tech
+   • status: intake · assigned: Jodi White
+   • Reg E due: 2026-06-30 (on time) · provisional credit: not issued
+   Open in Ops Console -> http://localhost:3100/disputes/29
+Q: @meridian-escalations policy provisional credit   -> 6 policy chunk hits with [chunk NN] ids
+Q: @meridian-escalations status                      -> portal reachable, seat scope type_a, audit count

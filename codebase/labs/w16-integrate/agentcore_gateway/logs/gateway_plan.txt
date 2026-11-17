@@ -1,0 +1,79 @@
+PLAN — the calls `apply` will make (nothing is created):
+
+  1. bedrock-agentcore-control.create_api_key_credential_provider
+     {
+       "name": "meridian-scoped-key",
+       "apiKey": "<MERIDIAN_API_KEY not set>"
+     }
+
+  2. iam.create_role  (once)
+     {
+       "RoleName": "MeridianAgentCoreGatewayRole",
+       "AssumeRolePolicyDocument": {
+         "Version": "2012-10-17",
+         "Statement": [
+           {
+             "Effect": "Allow",
+             "Principal": {
+               "Service": "bedrock-agentcore.amazonaws.com"
+             },
+             "Action": "sts:AssumeRole"
+           }
+         ]
+       },
+       "_inline_policy": {
+         "Version": "2012-10-17",
+         "Statement": [
+           {
+             "Effect": "Allow",
+             "Action": [
+               "bedrock-agentcore:GetWorkloadAccessToken",
+               "bedrock-agentcore:GetResourceApiKey",
+               "secretsmanager:GetSecretValue"
+             ],
+             "Resource": "*"
+           }
+         ]
+       }
+     }
+
+  3. bedrock-agentcore-control.create_gateway
+     {
+       "name": "meridian-gateway",
+       "roleArn": "arn:aws:iam::<your-account>:role/MeridianAgentCoreGatewayRole",
+       "protocolType": "MCP",
+       "authorizerType": "AWS_IAM",
+       "description": "Managed MCP door over the Meridian /api/v1 (W16 lab)"
+     }
+
+  4. bedrock-agentcore-control.create_gateway_target
+     {
+       "gatewayIdentifier": "<gateway id from create_gateway>",
+       "name": "meridian-api",
+       "targetConfiguration": {
+         "mcp": {
+           "openApiSchema": {
+             "inlinePayload": "<openapi.json \u2014 4647 bytes, 4 operations: get_dispute, get_dispute_evidence, search_policies, create_dispute_ticket>"
+           }
+         }
+       },
+       "credentialProviderConfigurations": [
+         {
+           "credentialProviderType": "API_KEY",
+           "credentialProvider": {
+             "apiKeyCredentialProvider": {
+               "providerArn": "<provider ARN from create_api_key_credential_provider>",
+               "credentialLocation": "HEADER",
+               "credentialParameterName": "Authorization",
+               "credentialPrefix": "Bearer "
+             }
+           }
+         }
+       ]
+     }
+
+Then: MCP endpoint = the gatewayUrl create_gateway returns;
+`invoke` signs tools/list + tools/call with SigV4 (service bedrock-agentcore).
+Every operationId in openapi.json is now a tool ANY MCP client can call —
+your agent, Claude Code, an IDE — with the key injected by the vault,
+and RBAC still enforced (and audited) inside /api/v1 itself.

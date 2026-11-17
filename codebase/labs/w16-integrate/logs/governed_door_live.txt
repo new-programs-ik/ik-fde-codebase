@@ -1,0 +1,46 @@
+GOVERNED DOOR — LIVE two-analyst proof, verbatim capture 2026-07-12
+The same MCP-door code the class watches in mock mode, run with --live against
+the deployed Meridian platform (/api/v1) under two real scoped analyst keys.
+ANSI stripped; otherwise the exact stdout. Real ticket 9000000019 is visible on
+https://ik-fde-casestudy-bank.vercel.app/disputes/29 (Linked tickets).
+
+$ MERIDIAN_KEY_A=mrdn_... MERIDIAN_KEY_B=mrdn_... python3 mcp_demo.py --live
+
+
+==========================================================================
+  LIVE — the same governed door, against the deployed Meridian platform
+  https://ik-fde-casestudy-bank.vercel.app/api/v1
+==========================================================================
+  key A resolves to: jason.soto@meridianbank.com  (scope=type_a)
+  key B resolves to: robert.joyce@meridianbank.com  (scope=type_b)
+
+=== TWO-ANALYST TEST — both ask: lookup_dispute(29) ===
+
+  Analyst A (type_a):  Type-A · Hillcrest Tech · $35.36 · intake
+  Analyst B (type_b):  403 DENIED — HTTP 403 forbidden_scope — Your seat (scope='type_b') is not permitted to access Type-A disputes.
+
+--- append-only audit log ---
+  {"acting_identity": "jason.soto@meridianbank.com", "scope": "type_a", "action": "lookup_dispute", "resource": "dispute/29", "decision": "allow"}
+  {"acting_identity": "robert.joyce@meridianbank.com", "scope": "type_b", "action": "lookup_dispute", "resource": "dispute/29", "decision": "deny"}
+
+RESULT: PASS ✓ scope holds — different answers + matching audit
+
+=== LIVE WRITE — create_ticket on dispute 29 (Idempotency-Key honored) ===
+
+  first : {"ticket_id": "9000000019", "subject": "Governed-door recommendation — dispute 29 (W16 two-analyst proof)", "status": "open"}
+  replay: {"ticket_id": "9000000019", "idempotent_replay": true}
+  ✓ real ticket 9000000019 exists ONCE — refresh the Ops Console on dispute 29 to see it
+
+=== LIVE AUDIT — GET /audit (the platform's own append-only trail) ===
+
+  {"action": "create_ticket", "resource_type": "ticket", "resource_id": "9000000019", "scope": "type_a", "decision": "allow"}
+  {"action": "create_ticket", "resource_type": "ticket", "resource_id": "9000000019", "scope": "type_a", "decision": "allow"}
+  {"action": "lookup_dispute", "resource_type": "dispute", "resource_id": "29", "scope": "type_b", "decision": "deny"}
+  {"action": "lookup_dispute", "resource_type": "dispute", "resource_id": "29", "scope": "type_a", "decision": "allow"}
+  {"action": "whoami", "resource_type": "analyst", "resource_id": "2", "scope": "type_b", "decision": "allow"}
+  {"action": "whoami", "resource_type": "analyst", "resource_id": "1", "scope": "type_a", "decision": "allow"}
+  {"action": "mint_key", "resource_type": "api_key", "resource_id": "79944ba0550f", "scope": "type_b", "decision": "allow"}
+  {"action": "mint_key", "resource_type": "api_key", "resource_id": "fbbd9067f7bf", "scope": "type_a", "decision": "allow"}
+  (key B's trail) {"action": "lookup_dispute", "resource_id": "29", "scope": "type_b", "decision": "deny"}
+
+LIVE RESULT: PASS ✓ — same action as W15, now scoped and audited; the circle closes through the governed door
